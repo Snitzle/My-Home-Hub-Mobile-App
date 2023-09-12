@@ -8,6 +8,18 @@
       "expo-router"
     ],
     "name": "react-native-jobs-list",
-    "slug": "react-native-jobs-list"
+    "slug": "react-native-jobs-list",
+    "splash": {
+      "image": "./assets/splash-dark.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#000000"
+    },
+    "icon": "./assets/icon.png",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    }
   }
 }

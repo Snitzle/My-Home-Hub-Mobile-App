@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { View, TextInput, Image, StyleSheet, Text } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Link } from 'expo-router';
+import { NavigationContainer } from '@react-navigation/native';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as Device from 'expo-device';
+
 
 const Home = () => {
 
@@ -9,57 +17,107 @@ const Home = () => {
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    
-    // Perform login logic here, e.g., make an API request to authenticate the user
-    console.log('Email:', email);
-    console.log('Password:', password);
+  
+    const login_data = JSON.stringify({ 
+      'email' : email, 
+      'password' : password, 
+      'device_name' : Device.device_name
+    });
 
-    // You can add your authentication logic and navigation code here
+    axios.post('http://myhomehub.test/api/sanctum/token', login_data, { headers: {
+      'Content-Type': 'application/json',
+    } } )
+      .then( response => {
 
-  };
+        console.log( response );
+
+        try {
+
+          AsyncStorage.setItem( 'auth-token', response.data );
+          console.log( "auth token set" );
+
+        } catch ( e ) {
+
+          console.log( e );
+
+        }
+
+        // Move to the next screen then get their properties from the api
+        router.push('/dashboard');  
+
+      })
+      .catch( error => {
+        console.log( "ERROR: " + error );
+      });
+
+  }
+
+  const handleRegister = () => {
+
+    router.push('/register');
+
+  }
 
   return (
-    <>
-        
+    
+        <>
+          <StatusBar style="auto" />
         <View style={styles.wrapper}>
 
-            <View style={styles.container}>
+            {/* Image Here */}
+            <View>
 
-                <Text style={styles.title}>My Home Hub</Text>
-
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    placeholderTextColor={'black'}
-                    onChangeText={(text) => setEmail(text)}
-                    value={email}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor={'black'}
-                    onChangeText={(text) => setPassword(text)}
-                    value={password}
-                    secureTextEntry={true} // Mask the password input
-                />
-
-                <TouchableOpacity style={ [styles.button, styles.bottomSpacing ] } title="Login" onPress={handleLogin} >
-                    <Text style={styles.button}>Login</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.button} title="Login" onPress={handleLogin} >
-                    <Text style={styles.button}>Register</Text>
-                </TouchableOpacity>
+              <Image source={ require( "./assets/logo--black.png" ) } style={ styles.logo_image } />
+              
+              <Text style={styles.title}>My Home Hub</Text>
 
             </View>
 
-        </View>
+              <View style={styles.container}>
 
-    </>
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Email"
+                      placeholderTextColor={'black'}
+                      onChangeText={(text) => setEmail(text)}
+                      value={email}
+                  />
+
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Password"
+                      placeholderTextColor={'black'}
+                      onChangeText={(text) => setPassword(text)}
+                      value={password}
+                      secureTextEntry={true} // Mask the password input
+                  />
+
+                  <TouchableOpacity style={ [styles.button, styles.bottomSpacing ] } title="Login" onPress={handleLogin} >
+                      <Text style={styles.button}>Login</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity style={styles.button} title="Register" onPress={ handleRegister } >
+                      <Text style={styles.button}>Register</Text>
+                  </TouchableOpacity>
+
+              </View>
+
+          </View>
+      </>
+
+    
   );
 };
 
 const styles = StyleSheet.create({
+  logo_image: {
+    width: 50,
+    height: 50,
+    objectFit: 'contain',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    marginBottom: 16,
+  },
   wrapper: {
     marginTop: 180,
     marginBottom: 'auto',
@@ -68,12 +126,12 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 32,
     backgroundColor: '#fff',
-    borderRadius: 25,
+    borderRadius: 15,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 32,
+    marginBottom: 16,
     textAlign: 'center',
   },
   input: {
